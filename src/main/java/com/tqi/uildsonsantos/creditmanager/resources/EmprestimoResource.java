@@ -21,7 +21,7 @@ import com.tqi.uildsonsantos.creditmanager.services.EmprestimoService;
 
 @RestController
 @RequestMapping(value = "/api/v1/emprestimos")
-public class EmprestimoResource {
+public class EmprestimoResource implements EmprestimoResourceDocs{
 
 	@Autowired
 	EmprestimoService emprestimoService;

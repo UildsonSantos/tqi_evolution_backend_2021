@@ -7,7 +7,6 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -24,33 +23,42 @@ import org.springframework.web.filter.CorsFilter;
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
 	@Autowired
-	private Environment environment;
-	
-	@Autowired
 	private JwtTokenStore tokenStore;
 
-	private static final String[] PUBLIC = { "/oauth/token", "/h2-console/**" };
-	private static final String[] CLIENT_OR_ADMIN = { "/api/v1/users/**" };
-
+	private static final String[] PUBLIC = { 
+			"/oauth/token", 
+			"/h2-console/**", 
+			"/v2/api-docs",
+			"/v1/api-docs",
+			"/swagger-resources",
+			"/swagger-resources/**",
+			"/configuration/ui",
+			"/configuration/security",
+			"/swagger-ui.html",
+			"/swagger-ui/**",
+			"/webjars/**"
+			};
+	
+	private static final String[] CLIENT_OR_ADMIN = { "/api/v1/users/**", "/api/v1/emprestimos/**" };
+	
+	
 	@Override
 	public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
 		resources.tokenStore(tokenStore);
 	}
 
 	@Override
-	public void configure(HttpSecurity http) throws Exception {
-
-		//to H2
-		if (Arrays.asList(environment.getActiveProfiles()).contains("test")) {
-			http.headers().frameOptions().disable();
-		}
+	public void configure(HttpSecurity http) throws Exception {		
 		
 		http.authorizeRequests()
 				.antMatchers(PUBLIC).permitAll()
 				.antMatchers(HttpMethod.GET, CLIENT_OR_ADMIN).hasAnyRole("CLIENT", "ADMIN")
+				.antMatchers("/**").authenticated()
 				.anyRequest().authenticated();
 		
-		http.cors().configurationSource(corsConfigurationSource());
+		http.headers().frameOptions().disable();
+		
+		http.cors().configurationSource(corsConfigurationSource());		
 	}
 
 	@Bean
@@ -65,7 +73,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 		source.registerCorsConfiguration("/**", corsConfig);
 		return source;
 	}
-
+	
 	@Bean
 	public FilterRegistrationBean<CorsFilter> corsFilter() {
 		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource()));

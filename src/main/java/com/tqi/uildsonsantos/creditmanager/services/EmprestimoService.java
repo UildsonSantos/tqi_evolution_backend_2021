@@ -50,14 +50,6 @@ public class EmprestimoService {
 	}
 
 	@Transactional(readOnly = true)
-	public EmprestimoDetailDTO findById(Long id) {
-		Optional<Emprestimo> emprestimo = emprestimoRepository.findById(id);
-
-		Emprestimo entity = emprestimo.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
-		return new EmprestimoDetailDTO(entity);
-	}
-
-	@Transactional(readOnly = true)
 	public EmprestimoDetailDTO findByIdAndUserId(Long id) {
 
 		Optional<Emprestimo> emprestimo = emprestimoRepository.findByIdAndUserId(id);
